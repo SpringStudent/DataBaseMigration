@@ -1,4 +1,4 @@
-package ning.zhou.jdbc.bean;
+package ning.zhou.jdbc.annotation;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
@@ -20,4 +20,10 @@ public @interface Table {
 	 * @return
 	 */
 	String name() default "";
+
+    /**
+     * 主键字段
+	 * @return
+     */
+	String pk() default "id";
 }

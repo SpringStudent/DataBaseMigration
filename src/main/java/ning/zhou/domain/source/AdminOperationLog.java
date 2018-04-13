@@ -1,7 +1,7 @@
 package ning.zhou.domain.source;
 
 import lombok.Data;
-import ning.zhou.jdbc.bean.Table;
+import ning.zhou.jdbc.annotation.Table;
 
 import java.util.Date;
 

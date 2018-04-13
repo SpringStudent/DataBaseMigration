@@ -1,4 +1,4 @@
-package ning.zhou.jdbc.utils;
+package ning.zhou.utils;
 
 import java.util.Collection;
 import java.util.Map;

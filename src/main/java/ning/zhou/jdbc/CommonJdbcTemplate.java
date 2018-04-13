@@ -1,17 +1,19 @@
 package ning.zhou.jdbc;
 
-import ning.zhou.jdbc.utils.EmptyUtils;
+import ning.zhou.bean.*;
 import ning.zhou.jdbc.utils.EntityTools;
 import ning.zhou.jdbc.utils.SqlMakeTools;
+import ning.zhou.utils.EmptyUtils;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author 周宁
@@ -23,7 +25,11 @@ public class CommonJdbcTemplate implements CommonJdbcOperations {
 
     private String tbName;
 
+    private String pk;
+
     private JdbcTemplate jdbcTemplate;
+
+    private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     private RowMapper rowMapper;
 
@@ -31,14 +37,15 @@ public class CommonJdbcTemplate implements CommonJdbcOperations {
         this.clzz = clzz;
         this.jdbcTemplate = jdbcTemplate;
         this.tbName = EntityTools.getTableName(clzz);
+        this.pk = EntityTools.getTableName(clzz);
         this.rowMapper = BeanPropertyRowMapper.newInstance(clzz);
+        this.namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
     }
 
     @Override
     public <E, Id extends Serializable> E queryOne(Id id) throws Exception {
         Field[] fields = clzz.getDeclaredFields();
-        String primaryKey = EntityTools.getPrimaryKey(fields);
-        String sql = "SELECT * FROM " + tbName + " WHERE " + primaryKey + " = ?";
+        String sql = "SELECT * FROM " + tbName + " WHERE " + pk + " = ?";
         List<E> result = jdbcTemplate.query(sql, rowMapper, id);
         if (EmptyUtils.isEmpty(result)) {
             return null;
@@ -72,7 +79,7 @@ public class CommonJdbcTemplate implements CommonJdbcOperations {
         String sql = SqlMakeTools.makeSql(clzz, tbName, SQL_INSERT);
         int[] argTypes = SqlMakeTools.setArgTypes(list.get(0), SQL_INSERT);
         Integer j = 0;
-        List<Object[]> batchArgs = new ArrayList<Object[]>();
+        List<Object[]> batchArgs = new ArrayList<>();
         for (int i = 0; i < list.size(); i++) {
             batchArgs.add(SqlMakeTools.setArgs(list.get(i), SQL_INSERT));
             j++;
@@ -88,8 +95,7 @@ public class CommonJdbcTemplate implements CommonJdbcOperations {
     @Override
     public <E, Id extends Serializable> void delete(Id id) throws Exception {
         Field[] fields = clzz.getDeclaredFields();
-        String primaryKey = EntityTools.getPrimaryKey(fields);
-        String sql = " DELETE FROM " + tbName + " WHERE " + primaryKey + " = ?";
+        String sql = " DELETE FROM " + tbName + " WHERE " + pk + " = ?";
         jdbcTemplate.update(sql, id);
     }
 
@@ -97,9 +103,8 @@ public class CommonJdbcTemplate implements CommonJdbcOperations {
     public <E, Id extends Serializable> void deleteAll(List<Id> ids) throws Exception {
         if (EmptyUtils.isNotEmpty(ids)) {
             Field[] fields = clzz.getDeclaredFields();
-            String primaryKey = EntityTools.getPrimaryKey(fields);
             StringBuilder sql = new StringBuilder();
-            sql.append(" DELETE FROM " + tbName + " WHERE " + primaryKey + " in (");
+            sql.append(" DELETE FROM " + tbName + " WHERE " + pk + " in (");
             for (int i = 0; i < ids.size(); i++) {
                 if (i == ids.size() - 1) {
                     sql.append("?)");
@@ -117,5 +122,72 @@ public class CommonJdbcTemplate implements CommonJdbcOperations {
         Object[] args = SqlMakeTools.setArgs(e, SQL_UPDATE);
         int[] argTypes = SqlMakeTools.setArgTypes(e, SQL_UPDATE);
         jdbcTemplate.update(sql, args, argTypes);
+    }
+
+    @Override
+    public <E> void batchUpdate(List<E> list) throws Exception {
+        //分页操作
+        String sql = SqlMakeTools.makeSql(clzz, tbName, SQL_UPDATE);
+        int[] argTypes = SqlMakeTools.setArgTypes(list.get(0), SQL_UPDATE);
+        Integer j = 0;
+        List<Object[]> batchArgs = new ArrayList<>();
+        for (int i = 0; i < list.size(); i++) {
+            batchArgs.add(SqlMakeTools.setArgs(list.get(i), SQL_UPDATE));
+            j++;
+            if (j.intValue() == BATCH_PAGE_SIZE) {
+                jdbcTemplate.batchUpdate(sql, batchArgs, argTypes);
+                batchArgs = new ArrayList<>();
+                j = 0;
+            }
+        }
+        jdbcTemplate.batchUpdate(sql, batchArgs, argTypes);
+    }
+
+    @Override
+    public <E> PageResult<E> pageQuery(Page page) throws Exception {
+        String sql = "SELECT * FROM " + tbName;
+        String pageSql = "SELECT SQL_CALC_FOUND_ROWS * FROM (" + sql + ") temp LIMIT ?,?";
+        List<E> paged = jdbcTemplate.query(pageSql, new Object[]{page.getOffset(), page.getPageSize()}, rowMapper);
+        String countSql = "SELECT FOUND_ROWS() ";
+        int count = jdbcTemplate.queryForObject(countSql, Integer.class);
+        return PageResult.newPageResult(count, paged);
+    }
+
+    @Override
+    public <E> PageResult<E> pageAndSortQuery(Page page, Sort sort) throws Exception {
+        String sql = "SELECT * FROM " + tbName;
+        if (sort != null) {
+            sql += sort.buildSortSql();
+        }
+        String pageSql = "SELECT SQL_CALC_FOUND_ROWS * FROM (" + sql + ") temp LIMIT ?,?";
+        List<E> paged = jdbcTemplate.query(pageSql, new Object[]{page.getOffset(), page.getPageSize()}, rowMapper);
+        String countSql = "SELECT FOUND_ROWS() ";
+        int count = jdbcTemplate.queryForObject(countSql, Integer.class);
+        return PageResult.newPageResult(count, paged);
+    }
+
+    @Override
+    public <E> List<E> queryWithCriteria(Criteria criteria) throws Exception {
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT * FROM " + tbName);
+        Map<String, Object> parmMap = new HashMap<>();
+        Set<WhereParam> whereParams = criteria.getWhereParams();
+        if (null != criteria && EmptyUtils.isNotEmpty(whereParams)) {
+            sql.append(" WHERE ");
+            for (WhereParam whereParam : whereParams) {
+                String key = whereParam.getKey();
+                String opt = whereParam.getOpt();
+                sql.append(key).append(SPACE);
+                if(SQL_IN.equals(opt.toUpperCase())){
+                    sql.append(opt).append(IN_START).append(COLON).append(key).append(IN_END);
+                }else{
+                    sql.append(opt).append(COLON).append(key);
+                }
+                sql.append(" AND ");
+                parmMap.put(key, whereParam.getValue());
+            }
+        }
+        sql.setLength(sql.length() - 5);
+        return namedParameterJdbcTemplate.query(sql.toString(),new MapSqlParameterSource(parmMap),rowMapper);
     }
 }

@@ -123,9 +123,6 @@
         <property name="dataSource" ref="sourceDataSource"/>
     </bean>
 
-    <bean id="sourceNamedJdbcTemplate" class="ning.zhou.jdbc.NullableNamedJdbcTemplate">
-        <constructor-arg ref="sourceJdbcTemplate"/>
-    </bean>
 
 
     <!-- 数据目标jdbcTEmplate -->
@@ -133,9 +130,6 @@
         <property name="dataSource" ref="targetDataSource"/>
     </bean>
 
-    <bean id="namedJdbcTemplate" class="ning.zhou.jdbc.NullableNamedJdbcTemplate">
-        <constructor-arg ref="jdbcTemplate"/>
-    </bean>
 
     <!-- 配置事务管理器 -->
     <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">

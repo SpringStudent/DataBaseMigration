@@ -14,14 +14,8 @@ public abstract class BaseDataSourceCopyMigration extends BaseSpringJdbcMigratio
 
     private JdbcTemplate sourceJdbcTemplate;
 
-    protected String tgtTable;
+    public BaseDataSourceCopyMigration() {
 
-    protected String sourceTable;
-
-
-    public BaseDataSourceCopyMigration(String tgtTable, String sourceTable) {
-        this.sourceTable = sourceTable;
-        this.tgtTable = tgtTable;
         sourceJdbcTemplate = APPLICATION_CONTEXT.getBean("sourceJdbcTemplate", JdbcTemplate.class);
     }
 

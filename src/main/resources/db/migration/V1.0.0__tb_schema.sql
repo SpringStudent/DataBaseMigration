@@ -2,7 +2,6 @@ DROP TABLE IF EXISTS `system_log`;
 CREATE TABLE `system_log` (
   `id` varchar(32) NOT NULL,
   `operator` varchar(512) NOT NULL COMMENT '操作人',
-  `functionGroup` varchar(265) NOT NULL COMMENT '功能组',
   `operFunction` varchar(265) NOT NULL COMMENT '操作功能',
   `operObject` longtext NOT NULL COMMENT '操作对象',
   `operationIP` varchar(64) NOT NULL COMMENT '操作者IP',

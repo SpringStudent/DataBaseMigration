@@ -1,6 +1,8 @@
 package ning.zhou.jdbc.utils;
 
 import java.lang.reflect.Field;
+import java.math.BigDecimal;
+import java.sql.Types;
 
 import static ning.zhou.jdbc.CommonJdbcOperations.*;
 
@@ -37,7 +39,7 @@ public class SqlMakeTools {
             for (int i = 0; fields != null && i < fields.length; i++) {
                 fields[i].setAccessible(true); // 暴力反射
                 String column = EntityTools.getColumnName(fields[i]);//获取属性对应字段名，没有注解默认按照属性名。有Column注解，获取Column的name作为字段名
-                if (EntityTools.isPrimaryKey(fields[i])) { // id 代表主键
+                if (EntityTools.isPk(clazz, fields[i])) { // id 代表主键
                     primaryKey = column;
                     continue;
                 }
@@ -50,7 +52,7 @@ public class SqlMakeTools {
             for (int i = 0; fields != null && i < fields.length; i++) {
                 fields[i].setAccessible(true); // 暴力反射
                 String column = EntityTools.getColumnName(fields[i]);//获取属性对应字段名，没有注解默认按照属性名。有Column注解，获取Column的name作为字段名
-                if (EntityTools.isPrimaryKey(fields[i])) { // id 代表主键
+                if (EntityTools.isPk(clazz, fields[i])) { // id 代表主键
                     primaryKey = column;
                     break;
                 }
@@ -65,7 +67,8 @@ public class SqlMakeTools {
      * 设置参数
      */
     public static <E> Object[] setArgs(E entity, String sqlFlag) {
-        Field[] fields = entity.getClass().getDeclaredFields();
+        Class<?> clzz = entity.getClass();
+        Field[] fields = clzz.getDeclaredFields();
         if (sqlFlag.equals(SQL_INSERT)) {
             Object[] args = new Object[fields.length];
             for (int i = 0; args != null && i < args.length; i++) {
@@ -84,7 +87,7 @@ public class SqlMakeTools {
             for (int i = 0; fields != null && i < fields.length; i++) {
                 try {
                     fields[i].setAccessible(true); // 暴力反射
-                    if (EntityTools.isPrimaryKey(fields[i])) { // id 代表主键
+                    if (EntityTools.isPk(clzz, fields[i])) { // id 代表主键
                         primaryValue = fields[i].get(entity);
                         continue;
                     }
@@ -101,7 +104,7 @@ public class SqlMakeTools {
             for (int i = 0; fields != null && i < fields.length; i++) {
                 try {
                     fields[i].setAccessible(true); // 暴力反射
-                    if (EntityTools.isPrimaryKey(fields[i])) { // id 代表主键
+                    if (EntityTools.isPk(clzz, fields[i])) { // id 代表主键
                         primaryValue = fields[i].get(entity);
                         break;
                     }
@@ -130,7 +133,7 @@ public class SqlMakeTools {
             int[] argTypes = new int[fields.length];
             try {
                 for (int i = 0; argTypes != null && i < argTypes.length; i++) {
-                    argTypes[i] = SqlTools.getTypes(fields[i]);
+                    argTypes[i] = getTypes(fields[i]);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -141,7 +144,7 @@ public class SqlMakeTools {
             int[] argTypes = new int[fields.length];
             try {
                 for (int i = 0; tempArgTypes != null && i < tempArgTypes.length; i++) {
-                    tempArgTypes[i] = SqlTools.getTypes(fields[i]);
+                    tempArgTypes[i] = getTypes(fields[i]);
                 }
                 System.arraycopy(tempArgTypes, 1, argTypes, 0, tempArgTypes.length - 1); // 数组拷贝
                 argTypes[argTypes.length - 1] = tempArgTypes[0];
@@ -154,12 +157,39 @@ public class SqlMakeTools {
         } else if (sqlFlag.equals(SQL_DELETE)) {
             int[] argTypes = new int[1]; // 长度是1
             try {
-                argTypes[0] = SqlTools.getTypes(fields[0]);
+                argTypes[0] = getTypes(fields[0]);
             } catch (Exception e) {
                 e.printStackTrace();
             }
             return argTypes;
         }
         return null;
+    }
+
+    private static int getTypes(Field arg) {
+        arg.setAccessible(true); // 暴力反射
+        if (String.class.equals(arg.getType())) {
+            return Types.VARCHAR;
+        } else if (int.class.equals(arg.getType()) || Integer.class.equals(arg.getType())) {
+            return Types.INTEGER;
+        } else if (double.class.equals(arg.getType()) || Double.class.equals(arg.getType())) {
+            return Types.DOUBLE;
+        } else if (java.util.Date.class.isAssignableFrom(arg.getType())) {
+            return Types.TIMESTAMP;
+        } else if (long.class.equals(arg.getType()) || Long.class.equals(arg.getType())) {
+            return Types.BIGINT;
+        } else if (float.class.equals(arg.getType()) || Float.class.equals(arg.getType())) {
+            return Types.FLOAT;
+        } else if (boolean.class.equals(arg.getType()) || Boolean.class.equals(arg.getType())) {
+            return Types.BOOLEAN;
+        } else if (short.class.equals(arg.getType()) || Short.class.equals(arg.getType())) {
+            return Types.INTEGER;
+        } else if (byte.class.equals(arg.getType()) || Byte.class.equals(arg.getType())) {
+            return Types.INTEGER;
+        } else if (BigDecimal.class.equals(arg.getType())) {
+            return Types.DECIMAL;
+        } else {
+            return Types.OTHER;
+        }
     }
 }
