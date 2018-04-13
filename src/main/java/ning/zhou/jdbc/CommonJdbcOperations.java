@@ -9,6 +9,11 @@ import java.util.List;
  */
 public interface CommonJdbcOperations {
 
+    String SQL_INSERT = "INSERT";
+    String SQL_UPDATE = "UPDATE";
+    String SQL_DELETE = "DELETE";
+    int BATCH_PAGE_SIZE = 1000;
+
     /**
      * 根据主键查询一条记录
      *
@@ -45,7 +50,7 @@ public interface CommonJdbcOperations {
      * @param <E>
      * @throws Exception
      */
-    <E> void save(List<E> list) throws Exception;
+    <E> void batchSave(List<E> list) throws Exception;
 
     /**
      * 根据主键删除一条记录
