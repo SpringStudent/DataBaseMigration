@@ -44,9 +44,14 @@ public class V1_0_1__MigrationSystemLog extends BaseDataSourceCopyMigration {
         List<SystemLog> result = target.queryWithCriteria(criteria);
         PageResult<SystemLog> result2 =target.pageQuery(new Page(1,12));
         PageResult<SystemLog> result3 = target.pageAndSortQuery(new Page(1,11),new Sort("operationTime","desc"));
+        PageResult<SystemLog> result4 = target.pageQueryWithCriteria(new Page(1,12),criteria);
+        PageResult<SystemLog> result5 = target.pageAndSortQueryWithCriteria(new Page(1,12),new Sort("operationTime","desc"),criteria);
+        System.out.println(systemLogs);
         System.out.println(result);
         System.out.println(result2);
         System.out.println(result3);
+        System.out.println(result4);
+        System.out.println(result5);
     }
 
     private String buildSystemLogOperObject(String operFunction, String operObject) {
