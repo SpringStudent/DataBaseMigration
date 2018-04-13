@@ -1,0 +1,23 @@
+DROP TABLE IF EXISTS `system_log`;
+CREATE TABLE `system_log` (
+  `id` varchar(32) NOT NULL,
+  `operator` varchar(512) NOT NULL COMMENT '操作人',
+  `functionGroup` varchar(265) NOT NULL COMMENT '功能组',
+  `operFunction` varchar(265) NOT NULL COMMENT '操作功能',
+  `operObject` longtext NOT NULL COMMENT '操作对象',
+  `operationIP` varchar(64) NOT NULL COMMENT '操作者IP',
+  `enterpriseId` int(11) NOT NULL COMMENT '企业id',
+  `operationTime` datetime NOT NULL COMMENT '操作时间',
+  KEY `ix_enterpriseId_operationTime` (`enterpriseId`,`operationTime`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
+/*!50100 PARTITION BY RANGE (YEAR(operationTime))
+(PARTITION p0 VALUES LESS THAN (2019) ENGINE = InnoDB,
+ PARTITION p1 VALUES LESS THAN (2020) ENGINE = InnoDB,
+ PARTITION p2 VALUES LESS THAN (2021) ENGINE = InnoDB,
+ PARTITION p3 VALUES LESS THAN (2022) ENGINE = InnoDB,
+ PARTITION p4 VALUES LESS THAN (2023) ENGINE = InnoDB,
+ PARTITION p5 VALUES LESS THAN (2024) ENGINE = InnoDB,
+ PARTITION p6 VALUES LESS THAN (2025) ENGINE = InnoDB,
+ PARTITION p7 VALUES LESS THAN (2026) ENGINE = InnoDB,
+ PARTITION p8 VALUES LESS THAN (2027) ENGINE = InnoDB,
+ PARTITION p9 VALUES LESS THAN (2028) ENGINE = InnoDB) */;
