@@ -110,6 +110,8 @@ public interface CommonJdbcOperations {
      */
     <E> PageResult<E> pageQuery(Page page) throws Exception;
 
+    <E> PageResult<E> pageQueryWithCriteria(Page page, Criteria criteria) throws Exception;
+
     /**
      * 分页并排序查询
      *
@@ -120,6 +122,8 @@ public interface CommonJdbcOperations {
      * @throws Exception
      */
     <E> PageResult<E> pageAndSortQuery(Page page, Sort sort) throws Exception;
+
+    <E> PageResult<E> pageAndSortQueryWithCriteria(Page page, Sort sort, Criteria criteria) throws Exception;
 
     /**
      * 条件查询

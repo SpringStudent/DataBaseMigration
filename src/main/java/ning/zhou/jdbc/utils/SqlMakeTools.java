@@ -1,5 +1,7 @@
 package ning.zhou.jdbc.utils;
 
+import ning.zhou.bean.Criteria;
+
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.sql.Types;
@@ -192,4 +194,5 @@ public class SqlMakeTools {
             return Types.OTHER;
         }
     }
+
 }

@@ -11,8 +11,6 @@ import java.util.Set;
  */
 public class Criteria {
 
-
-
     private Set<WhereParam> whereParams;
 
     public Set<WhereParam> getWhereParams() {

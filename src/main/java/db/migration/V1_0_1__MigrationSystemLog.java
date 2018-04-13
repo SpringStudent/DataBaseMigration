@@ -1,9 +1,6 @@
 package db.migration;
 
-import ning.zhou.bean.Criteria;
-import ning.zhou.bean.ObjectMapper;
-import ning.zhou.bean.Page;
-import ning.zhou.bean.PageResult;
+import ning.zhou.bean.*;
 import ning.zhou.domain.source.AdminOperationLog;
 import ning.zhou.domain.tgt.SystemLog;
 import ning.zhou.jdbc.CommonJdbcTemplate;
@@ -46,8 +43,10 @@ public class V1_0_1__MigrationSystemLog extends BaseDataSourceCopyMigration {
         Criteria criteria = new Criteria().where("operator","13701966214").and("enterpriseId","in", Arrays.asList(new Integer[]{89}));
         List<SystemLog> result = target.queryWithCriteria(criteria);
         PageResult<SystemLog> result2 =target.pageQuery(new Page(1,12));
+        PageResult<SystemLog> result3 = target.pageAndSortQuery(new Page(1,11),new Sort("operationTime","desc"));
         System.out.println(result);
         System.out.println(result2);
+        System.out.println(result3);
     }
 
     private String buildSystemLogOperObject(String operFunction, String operObject) {
