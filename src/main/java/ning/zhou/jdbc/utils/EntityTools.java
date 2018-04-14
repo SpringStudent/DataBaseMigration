@@ -47,7 +47,7 @@ public class EntityTools {
     /**
      * 根据实体类名，获取表名称
      *
-     * @param entityName
+     * @param entity
      * @return
      */
     public static String getTableName(Class<?> entity) {
@@ -112,7 +112,7 @@ public class EntityTools {
                         me.setAccessible(true);
                     }
                     try {
-                        if (me.getName().equals("name")) {
+                        if ("name".equals(me.getName())) {
                             columnName = me.invoke(anno, null).toString();
                         }
                     } catch (IllegalAccessException e) {

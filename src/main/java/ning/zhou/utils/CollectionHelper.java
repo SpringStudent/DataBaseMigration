@@ -50,7 +50,9 @@ public class CollectionHelper {
      * @return
      */
     public static <K, V> V putIfAbsent(Map<K, V> map, K key, ValueFactory<V, K> factory) {
-        if (map.containsKey(key)) return map.get(key);
+        if (map.containsKey(key)){
+            return map.get(key);
+        }
         V value = factory.create(key);
         map.put(key, value);
         return value;
