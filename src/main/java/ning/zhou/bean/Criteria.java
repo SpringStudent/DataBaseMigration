@@ -1,7 +1,9 @@
 package ning.zhou.bean;
 
+import ning.zhou.utils.EmptyUtils;
+
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -22,7 +24,7 @@ public class Criteria {
     }
 
     public Criteria() {
-        whereParams = new HashSet<>();
+        whereParams = new LinkedHashSet<>();
     }
 
     public Criteria where(String key, Object value) {
@@ -35,7 +37,7 @@ public class Criteria {
     }
 
     public Criteria like(String key, Object value) {
-        return this.where(key, "LIKE", "%"+value+"%");
+        return this.where(key, "LIKE", "%" + value + "%");
     }
 
     public Criteria gt(String key, Object value) {
@@ -79,6 +81,9 @@ public class Criteria {
     }
 
     public Criteria or(String key, String opt, Object value) {
+        if (EmptyUtils.isEmpty(this.whereParams)) {
+            throw new RuntimeException("sql error,condition \"or\" must be following after \"where\"!");
+        }
         return this.where(" OR " + key, opt, value);
     }
 
@@ -88,7 +93,7 @@ public class Criteria {
 
     public static void main(String[] args) {
         Criteria criteria = new Criteria();
-        criteria.where("username","zhouning01").and("epid",921).or("isAdim",true).in("id", Arrays.asList(new Integer[]{1,3,4,5}));
+        criteria.where("username", "zhouning01").and("epid", 921).or("isAdim", true).in("id", Arrays.asList(new Integer[]{1, 3, 4, 5}));
         System.out.println(criteria.whereParams);
     }
 }

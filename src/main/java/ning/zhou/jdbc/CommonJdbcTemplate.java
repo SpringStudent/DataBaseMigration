@@ -214,7 +214,7 @@ public class CommonJdbcTemplate implements CommonJdbcOperations {
                             }
                             sql.setLength(sql.length() - 1);
                         } else {
-                            sql.append(opt).append(SPACE).append("?");
+                            sql.append(SPACE).append("?");
                             params = ArrayUtils.add(params, value);
                         }
                         sql.append(IN_END);
@@ -223,12 +223,11 @@ public class CommonJdbcTemplate implements CommonJdbcOperations {
                         params = ArrayUtils.add(params, value);
                     }
                     sql.append(" AND ");
-
                 }
                 sql.setLength(sql.length() - 5);
             }
         }
-        result.setFirst(sql.toString());
+        result.setFirst(sql.toString().replace(", WHERE", " WHERE").replace("AND  OR", "OR"));
         result.setSecond(params);
         return result;
     }
