@@ -28,7 +28,7 @@ public interface CommonJdbcOperations {
     /**
      * 根据主键查询一条记录
      *
-     * @param primaryKey
+     * @param id
      * @param <E>
      * @param <Id>
      * @return
@@ -66,7 +66,7 @@ public interface CommonJdbcOperations {
     /**
      * 根据主键删除一条记录
      *
-     * @param primaryKey
+     * @param id
      * @param <E>
      * @param <Id>
      * @throws Exception
@@ -76,12 +76,12 @@ public interface CommonJdbcOperations {
     /**
      * 根据主键批量删除
      *
-     * @param primaryKeys
+     * @param ids
      * @param <E>
      * @param <Id>
      * @throws Exception
      */
-    <E, Id extends Serializable> void deleteAll(List<Id> ids) throws Exception;
+    <E, Id extends Serializable> void batchDelete(List<Id> ids) throws Exception;
 
     /**
      * 更新一条记录

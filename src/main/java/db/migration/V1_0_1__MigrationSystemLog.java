@@ -8,8 +8,7 @@ import ning.zhou.utils.CollectionHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * 数据库迁移；重置期数事件
@@ -23,6 +22,7 @@ public class V1_0_1__MigrationSystemLog extends BaseDataSourceCopyMigration {
     protected void doMigrate(JdbcTemplate sourceJdbcTemplate, JdbcTemplate targetJdbcTemplate) throws Exception {
         CommonJdbcTemplate source = new CommonJdbcTemplate(AdminOperationLog.class,sourceJdbcTemplate);
         CommonJdbcTemplate target = new CommonJdbcTemplate(SystemLog.class,targetJdbcTemplate);
+
         List<AdminOperationLog> adminOperationLogs = source.query();
         List<SystemLog> systemLogs = CollectionHelper.map(adminOperationLogs, new ObjectMapper<SystemLog, AdminOperationLog>() {
             @Override
@@ -46,15 +46,37 @@ public class V1_0_1__MigrationSystemLog extends BaseDataSourceCopyMigration {
         PageResult<SystemLog> result3 = target.pageAndSortQuery(new Page(1,11),new Sort("operationTime","desc"));
         PageResult<SystemLog> result4 = target.pageQueryWithCriteria(new Page(1,12),criteria);
         PageResult<SystemLog> result5 = target.pageAndSortQueryWithCriteria(new Page(1,12),new Sort("operationTime","desc"),criteria);
+        SystemLog systemLog = target.queryOne(1);
+
+        System.out.print(systemLog);
         System.out.println(systemLogs);
         System.out.println(result);
         System.out.println(result2);
         System.out.println(result3);
         System.out.println(result4);
         System.out.println(result5);
+
     }
 
     private String buildSystemLogOperObject(String operFunction, String operObject) {
         return operFunction + "\"" + operObject + "\"";
     }
+
+    /*List<AdminOperationLog> logs = new ArrayList<>();
+        String[] adminNames = new String[]{"17788888888","zhouning","xyj","1835607079","zhangyapo","13701966214"};
+        String[] ips = new String[]{"127.0.0.1","117.21.32.44","172.16.21.42","192.152.21.3","182.1.2.23.2","117.232.22.8"};
+        Integer[] enterpriseIds = new Integer[]{90001000,-1,89,921,1018,1042};
+        String[] operFunctions = new String[]{"修改密码","修改授权","创建用户","删除用户","打开工程","重命名"};
+        Random random = new Random();
+        for(int i = 1;i<12340;i++){
+            AdminOperationLog log = new AdminOperationLog();
+            log.setAdmin(adminNames[random.nextInt(6)]);
+            log.setEnterpriseId(enterpriseIds[random.nextInt(6)]);
+            log.setOperationIP(ips[random.nextInt(6)]);
+            log.setOperFunction(operFunctions[random.nextInt(6)]);
+            log.setOperObject(adminNames[random.nextInt(6)]);
+            log.setOperationTime(new Date());
+            logs.add(log);
+        }
+        source.batchSave(logs);*/
 }

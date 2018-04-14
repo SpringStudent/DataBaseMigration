@@ -12,7 +12,6 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import java.io.Serializable;
-import java.lang.reflect.Field;
 import java.util.*;
 
 /**
@@ -37,14 +36,13 @@ public class CommonJdbcTemplate implements CommonJdbcOperations {
         this.clzz = clzz;
         this.jdbcTemplate = jdbcTemplate;
         this.tbName = EntityTools.getTableName(clzz);
-        this.pk = EntityTools.getTableName(clzz);
+        this.pk = EntityTools.getPk(clzz);
         this.rowMapper = BeanPropertyRowMapper.newInstance(clzz);
         this.namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
     }
 
     @Override
     public <E, Id extends Serializable> E queryOne(Id id) throws Exception {
-        Field[] fields = clzz.getDeclaredFields();
         String sql = "SELECT * FROM " + tbName + " WHERE " + pk + " = ?";
         List<E> result = jdbcTemplate.query(sql, rowMapper, id);
         if (EmptyUtils.isEmpty(result)) {
@@ -94,15 +92,13 @@ public class CommonJdbcTemplate implements CommonJdbcOperations {
 
     @Override
     public <E, Id extends Serializable> void delete(Id id) throws Exception {
-        Field[] fields = clzz.getDeclaredFields();
         String sql = " DELETE FROM " + tbName + " WHERE " + pk + " = ?";
         jdbcTemplate.update(sql, id);
     }
 
     @Override
-    public <E, Id extends Serializable> void deleteAll(List<Id> ids) throws Exception {
+    public <E, Id extends Serializable> void batchDelete(List<Id> ids) throws Exception {
         if (EmptyUtils.isNotEmpty(ids)) {
-            Field[] fields = clzz.getDeclaredFields();
             StringBuilder sql = new StringBuilder();
             sql.append(" DELETE FROM " + tbName + " WHERE " + pk + " in (");
             for (int i = 0; i < ids.size(); i++) {
@@ -196,7 +192,7 @@ public class CommonJdbcTemplate implements CommonJdbcOperations {
      * 创建条件查询sql
      *
      * @param criteria
-     * @param baseSql
+     * @param sql
      * @return
      */
     private String makeCriteriaSql(Criteria criteria, StringBuilder sql, Map<String, Object> paramMap) {
