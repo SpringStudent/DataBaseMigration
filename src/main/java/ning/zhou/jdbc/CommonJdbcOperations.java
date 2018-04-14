@@ -20,7 +20,6 @@ public interface CommonJdbcOperations {
     int BATCH_PAGE_SIZE = 1000;
     String SPACE = " ";
     String SQL_IN = "IN";
-    String SQL_OR = "OR";
     char IN_START = '(';
     char IN_END = ')';
 

@@ -40,9 +40,9 @@ public class V1_0_1__MigrationSystemLog extends BaseDataSourceCopyMigration {
         });
         target.batchSave(systemLogs);
 
-        /*Criteria criteria = new Criteria().where("operator","13701966214").and("enterpriseId", "in",Arrays.asList(89,921))).gt("id",235)
-                .like("operObject","y").notEqual("id",256).or("id","in",18);*/
-        Criteria criteria = new Criteria().or("id",123);
+        Criteria criteria = new Criteria().where("operator","13701966214").and("enterpriseId", "in",Arrays.asList(89,921)).gt("id",235)
+                .like("operObject","y").notEqual("id",256).or("id","in",Arrays.asList(new Integer[]{1,18})).and("id","in",1);
+        /*Criteria criteria = new Criteria().or("id",123);*/
 
         List<SystemLog> result = target.queryWithCriteria(criteria);
         PageResult<SystemLog> result2 =target.pageQuery(new Page(1,12));
