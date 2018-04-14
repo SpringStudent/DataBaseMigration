@@ -1,6 +1,7 @@
 package ning.zhou;
 
 import ning.zhou.bean.ObjectFactory;
+import ning.zhou.bean.ObjectHandler;
 import ning.zhou.bean.ObjectMapper;
 import ning.zhou.bean.Pair;
 import ning.zhou.utils.CollectionHelper;
@@ -60,5 +61,11 @@ public class AppTest
             }
         });
         System.out.print(orgs);
+        CollectionHelper.handler(treeNodeList, new ObjectHandler<Org>() {
+            @Override
+            public void handler(Org org) {
+                System.out.print(org.getName());
+            }
+        });
     }
 }

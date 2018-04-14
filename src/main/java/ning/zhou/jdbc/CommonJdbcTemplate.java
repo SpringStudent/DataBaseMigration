@@ -4,12 +4,11 @@ import ning.zhou.bean.*;
 import ning.zhou.jdbc.utils.EntityTools;
 import ning.zhou.jdbc.utils.SqlMakeTools;
 import ning.zhou.utils.EmptyUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import java.io.Serializable;
 import java.util.*;
@@ -28,8 +27,6 @@ public class CommonJdbcTemplate implements CommonJdbcOperations {
 
     private JdbcTemplate jdbcTemplate;
 
-    private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-
     private RowMapper rowMapper;
 
     public CommonJdbcTemplate(Class clzz, JdbcTemplate jdbcTemplate) {
@@ -38,7 +35,6 @@ public class CommonJdbcTemplate implements CommonJdbcOperations {
         this.tbName = EntityTools.getTableName(clzz);
         this.pk = EntityTools.getPk(clzz);
         this.rowMapper = BeanPropertyRowMapper.newInstance(clzz);
-        this.namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
     }
 
     @Override
@@ -141,61 +137,64 @@ public class CommonJdbcTemplate implements CommonJdbcOperations {
 
     @Override
     public <E> PageResult<E> pageQuery(Page page) throws Exception {
-        return this.pageQueryWithCriteria(page,null);
+        return this.pageQueryWithCriteria(page, null);
     }
 
     @Override
     public <E> PageResult<E> pageQueryWithCriteria(Page page, Criteria criteria) throws Exception {
         String sql = "SELECT * FROM " + tbName;
-        Map<String, Object> paramMap = new HashMap<>();
-        sql = makeCriteriaSql(criteria, new StringBuilder(sql), paramMap);
-        String pageSql = "SELECT SQL_CALC_FOUND_ROWS * FROM (" + sql + ") temp LIMIT :offset,:pageSize";
-        paramMap.put("offset", page.getOffset());
-        paramMap.put("pageSize", page.getPageSize());
-        List<E> paged = namedParameterJdbcTemplate.query(pageSql, new MapSqlParameterSource(paramMap), rowMapper);
+        Pair<String, Object[]> pair = doCriteria(criteria, new StringBuilder(sql));
+        sql = pair.getFirst();
+        Object[] params = pair.getSecond();
+        String pageSql = "SELECT SQL_CALC_FOUND_ROWS * FROM (" + sql + ") temp LIMIT ?,?";
+        params = ArrayUtils.add(params, page.getOffset());
+        params = ArrayUtils.add(params, page.getPageSize());
+        List<E> paged = jdbcTemplate.query(pageSql, params, rowMapper);
         String countSql = "SELECT FOUND_ROWS() ";
-        int count = namedParameterJdbcTemplate.queryForObject(countSql, new MapSqlParameterSource(paramMap), Integer.class);
+        int count = jdbcTemplate.queryForObject(countSql, Integer.class);
         return PageResult.newPageResult(count, paged);
     }
 
     @Override
     public <E> PageResult<E> pageAndSortQuery(Page page, Sort sort) throws Exception {
-        return this.pageAndSortQueryWithCriteria(page,sort,null);
+        return this.pageAndSortQueryWithCriteria(page, sort, null);
     }
 
     @Override
     public <E> PageResult<E> pageAndSortQueryWithCriteria(Page page, Sort sort, Criteria criteria) throws Exception {
         String sql = "SELECT * FROM " + tbName;
-        Map<String, Object> paramMap = new HashMap<>();
-        sql = makeCriteriaSql(criteria, new StringBuilder(sql), paramMap);
+        Pair<String, Object[]> pair = doCriteria(criteria, new StringBuilder(sql));
+        sql = pair.getFirst();
+        Object[] params = pair.getSecond();
         if (sort != null) {
             sql += sort.buildSortSql();
         }
-        String pageSql = "SELECT SQL_CALC_FOUND_ROWS * FROM (" + sql + ") temp LIMIT :offset,:pageSize";
-        paramMap.put("offset", page.getOffset());
-        paramMap.put("pageSize", page.getPageSize());
-        List<E> paged = namedParameterJdbcTemplate.query(pageSql, new MapSqlParameterSource(paramMap), rowMapper);
+        String pageSql = "SELECT SQL_CALC_FOUND_ROWS * FROM (" + sql + ") temp LIMIT ?,?";
+        params = ArrayUtils.add(params, page.getOffset());
+        params = ArrayUtils.add(params, page.getPageSize());
+        List<E> paged = jdbcTemplate.query(pageSql, params, rowMapper);
         String countSql = "SELECT FOUND_ROWS() ";
-        int count = namedParameterJdbcTemplate.queryForObject(countSql, new MapSqlParameterSource(paramMap), Integer.class);
+        int count = jdbcTemplate.queryForObject(countSql, Integer.class);
         return PageResult.newPageResult(count, paged);
     }
 
     @Override
     public <E> List<E> queryWithCriteria(Criteria criteria) throws Exception {
         String sql = "SELECT * FROM " + tbName;
-        Map<String, Object> parmMap = new HashMap<>();
-        sql = makeCriteriaSql(criteria, new StringBuilder(sql), parmMap);
-        return namedParameterJdbcTemplate.query(sql, new MapSqlParameterSource(parmMap), rowMapper);
+        Pair<String, Object[]> pair = doCriteria(criteria, new StringBuilder(sql));
+        return jdbcTemplate.query(pair.getFirst(), pair.getSecond(), rowMapper);
     }
 
     /**
-     * 创建条件查询sql
+     * 创建条件查询sql和入参
      *
      * @param criteria
      * @param sql
      * @return
      */
-    private String makeCriteriaSql(Criteria criteria, StringBuilder sql, Map<String, Object> paramMap) {
+    private Pair<String, Object[]> doCriteria(Criteria criteria, StringBuilder sql) {
+        Pair<String, Object[]> result = new Pair<>();
+        Object[] params = {};
         if (null != criteria && EmptyUtils.isNotEmpty(criteria.getWhereParams())) {
             Set<WhereParam> whereParams = criteria.getWhereParams();
             if (null != criteria && EmptyUtils.isNotEmpty(whereParams)) {
@@ -203,18 +202,34 @@ public class CommonJdbcTemplate implements CommonJdbcOperations {
                 for (WhereParam whereParam : whereParams) {
                     String key = whereParam.getKey();
                     String opt = whereParam.getOpt();
+                    Object value = whereParam.getValue();
                     sql.append(key).append(SPACE);
                     if (SQL_IN.equals(opt.toUpperCase())) {
-                        sql.append(opt).append(IN_START).append(COLON).append(key).append(IN_END);
+                        sql.append(opt).append(IN_START);
+                        if (value instanceof Collection) {
+                            Iterator iterator = ((Collection) value).iterator();
+                            while (iterator.hasNext()) {
+                                params = ArrayUtils.add(params, iterator.next());
+                                sql.append("?,");
+                            }
+                            sql.setLength(sql.length() - 1);
+                        } else {
+                            sql.append(opt).append(SPACE).append("?");
+                            params = ArrayUtils.add(params, value);
+                        }
+                        sql.append(IN_END);
                     } else {
-                        sql.append(opt).append(COLON).append(key);
+                        sql.append(opt).append(SPACE).append("?");
+                        params = ArrayUtils.add(params, value);
                     }
                     sql.append(" AND ");
-                    paramMap.put(key, whereParam.getValue());
+
                 }
                 sql.setLength(sql.length() - 5);
             }
         }
-        return sql.toString();
+        result.setFirst(sql.toString());
+        result.setSecond(params);
+        return result;
     }
 }

@@ -35,7 +35,7 @@ public class Criteria {
     }
 
     public Criteria like(String key, Object value) {
-        return this.where(key, "LIKE", value);
+        return this.where(key, "LIKE", "%"+value+"%");
     }
 
     public Criteria gt(String key, Object value) {

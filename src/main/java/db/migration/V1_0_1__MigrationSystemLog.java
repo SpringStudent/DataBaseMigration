@@ -5,10 +5,10 @@ import ning.zhou.domain.source.AdminOperationLog;
 import ning.zhou.domain.tgt.SystemLog;
 import ning.zhou.jdbc.CommonJdbcTemplate;
 import ning.zhou.utils.CollectionHelper;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * 数据库迁移；重置期数事件
@@ -40,7 +40,9 @@ public class V1_0_1__MigrationSystemLog extends BaseDataSourceCopyMigration {
         });
         target.batchSave(systemLogs);
 
-        Criteria criteria = new Criteria().where("operator","13701966214").and("enterpriseId","in", Arrays.asList(new Integer[]{89}));
+        Criteria criteria = new Criteria().where("operator","13701966214").in("enterpriseId", Arrays.asList(new Integer[]{89,921})).gt("id",235)
+                .like("operObject","y").notEqual("id",256);
+
         List<SystemLog> result = target.queryWithCriteria(criteria);
         PageResult<SystemLog> result2 =target.pageQuery(new Page(1,12));
         PageResult<SystemLog> result3 = target.pageAndSortQuery(new Page(1,11),new Sort("operationTime","desc"));
