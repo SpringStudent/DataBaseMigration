@@ -24,7 +24,7 @@ public class TreeNodeUtils {
      * @param <T>
      * @return
      */
-    public static <E extends TreeNode,ID extends Serializable,T extends Collection<E>> T searchAncestorsAndDescendants(Map<ID,E> allNodes, E node, ObjectFactory<T> factory){
+    public static <E extends TreeNode,ID extends Serializable,T extends Collection<E>> T  searchAncestorsAndDescendants(Map<ID,E> allNodes, E node, ObjectFactory<T> factory){
         T result = factory.getObject();
         if(EmptyUtils.isEmpty(allNodes)||null==node){
             return result;
