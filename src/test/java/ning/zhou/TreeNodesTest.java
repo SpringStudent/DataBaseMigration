@@ -85,7 +85,6 @@ public class TreeNodesTest {
 
     @Test
     public void testSearchDescendants() {
-
         Set<TreeNode<String>> result = TreeNodeUtils.searchDescendants(allNodes, level10, new ObjectFactory<Set<TreeNode<String>>>() {
             @Override
             public Set<TreeNode<String>> getObject() {
@@ -106,7 +105,6 @@ public class TreeNodesTest {
 
     @Test
     public void testSearchAncestorsAndDescendants() {
-
         Set<TreeNode<String>> result = TreeNodeUtils.searchAncestorsAndDescendants(allNodes, level20, new ObjectFactory<Set<TreeNode<String>>>() {
             @Override
             public Set<TreeNode<String>> getObject() {

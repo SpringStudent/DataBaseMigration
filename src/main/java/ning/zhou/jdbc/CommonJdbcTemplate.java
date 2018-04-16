@@ -218,16 +218,15 @@ public class CommonJdbcTemplate implements CommonJdbcOperations {
                             params = ArrayUtils.add(params, value);
                         }
                         sql.append(IN_END);
+                    } else if (SQL_IS.equals(opt.toUpperCase())) {
+                        sql.append(opt).append(SPACE).append(value);
                     } else {
                         sql.append(opt).append(SPACE).append("?");
                         params = ArrayUtils.add(params, value);
-                    }
-                    sql.append(" AND ");
-                }
-                sql.setLength(sql.length() - 5);
+                    } sql.append(" AND ");
+                } sql.setLength(sql.length() - 5);
             }
-        }
-        result.setFirst(sql.toString().replace(", WHERE", " WHERE").replace("AND  OR", "OR"));
+        } result.setFirst(sql.toString().replace(", WHERE", " WHERE").replace("AND  OR", "OR"));
         result.setSecond(params);
         return result;
     }

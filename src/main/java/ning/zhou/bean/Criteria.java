@@ -61,11 +61,11 @@ public class Criteria {
     }
 
     public Criteria isNull(String key) {
-        return this.where(key, "IS", "IS NULL");
+        return this.where(key, "IS", "NULL");
     }
 
     public Criteria isNotNull(String key) {
-        return this.where(key, "IS", "IS NOT NULL");
+        return this.where(key, "IS", "NOT NULL");
     }
 
     public Criteria and(String key, Object value) {

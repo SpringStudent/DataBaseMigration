@@ -22,6 +22,7 @@ public interface CommonJdbcOperations {
     String SQL_IN = "IN";
     char IN_START = '(';
     char IN_END = ')';
+    String SQL_IS = "IS";
 
 
     /**
