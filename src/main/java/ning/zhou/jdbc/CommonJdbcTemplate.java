@@ -195,38 +195,63 @@ public class CommonJdbcTemplate implements CommonJdbcOperations {
     private Pair<String, Object[]> doCriteria(Criteria criteria, StringBuilder sql) {
         Pair<String, Object[]> result = new Pair<>();
         Object[] params = {};
-        if (null != criteria && EmptyUtils.isNotEmpty(criteria.getWhereParams())) {
-            Set<WhereParam> whereParams = criteria.getWhereParams();
-            if (null != criteria && EmptyUtils.isNotEmpty(whereParams)) {
-                sql.append(" WHERE ");
-                for (WhereParam whereParam : whereParams) {
-                    String key = whereParam.getKey();
-                    String opt = whereParam.getOpt();
-                    Object value = whereParam.getValue();
-                    sql.append(key).append(SPACE);
-                    if (SQL_IN.equals(opt.toUpperCase())) {
-                        sql.append(opt).append(IN_START);
-                        if (value instanceof Collection) {
-                            Iterator iterator = ((Collection) value).iterator();
-                            while (iterator.hasNext()) {
-                                params = ArrayUtils.add(params, iterator.next());
-                                sql.append("?,");
+        if (null != criteria) {
+            if (EmptyUtils.isNotEmpty(criteria.getWhereParams())) {
+                //where 条件参数拼接
+                Set<WhereParam> whereParams = criteria.getWhereParams();
+                if (null != criteria && EmptyUtils.isNotEmpty(whereParams)) {
+                    sql.append(" WHERE ");
+                    for (WhereParam whereParam : whereParams) {
+                        String key = whereParam.getKey();
+                        String opt = whereParam.getOpt();
+                        Object value = whereParam.getValue();
+                        sql.append(key).append(SPACE);
+                        if (SQL_IN.equals(opt.toUpperCase())) {
+                            sql.append(opt).append(IN_START);
+                            if (value instanceof Collection) {
+                                Iterator iterator = ((Collection) value).iterator();
+                                while (iterator.hasNext()) {
+                                    params = ArrayUtils.add(params, iterator.next());
+                                    sql.append("?,");
+                                }
+                                sql.setLength(sql.length() - 1);
+                            } else {
+                                sql.append(SPACE).append("?");
+                                params = ArrayUtils.add(params, value);
                             }
-                            sql.setLength(sql.length() - 1);
+                            sql.append(IN_END);
+                        } else if (SQL_IS.equals(opt.toUpperCase())) {
+                            sql.append(opt).append(SPACE).append(value);
                         } else {
-                            sql.append(SPACE).append("?");
+                            sql.append(opt).append(SPACE).append("?");
                             params = ArrayUtils.add(params, value);
                         }
-                        sql.append(IN_END);
-                    } else if (SQL_IS.equals(opt.toUpperCase())) {
-                        sql.append(opt).append(SPACE).append(value);
-                    } else {
-                        sql.append(opt).append(SPACE).append("?");
-                        params = ArrayUtils.add(params, value);
-                    } sql.append(" AND ");
-                } sql.setLength(sql.length() - 5);
+                        sql.append(" AND ");
+                    }
+                    sql.setLength(sql.length() - 5);
+                }
             }
-        } result.setFirst(sql.toString().replace(", WHERE", " WHERE").replace("AND  OR", "OR"));
+            //group by条件拼接
+            if (EmptyUtils.isNotEmpty(criteria.getGroupByFeilds())) {
+                sql.append(SPACE).append(SQL_GROUP_BY).append(SPACE);
+                Set<String> groupByFileds = criteria.getGroupByFeilds();
+                for (String groupByFiled : groupByFileds) {
+                    sql.append(groupByFiled + ",");
+                }
+                sql.setLength(sql.length() - 1);
+            }
+            //排序条件拼接
+            if (EmptyUtils.isNotEmpty(criteria.getSorts())) {
+                sql.append(SPACE).append(SQL_ORDER_BY).append(SPACE);
+                Set<Sort> sorts = criteria.getSorts();
+                for (Sort sort : sorts) {
+                    sql.append(sort.getSortField()).append(SPACE).append(sort.getSortType()).append(",");
+                }
+                sql.setLength(sql.length() - 1);
+            }
+        }
+
+        result.setFirst(sql.toString().replace(", WHERE", " WHERE").replace("AND  OR", "OR"));
         result.setSecond(params);
         return result;
     }

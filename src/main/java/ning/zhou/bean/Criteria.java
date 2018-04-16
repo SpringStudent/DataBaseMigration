@@ -2,18 +2,27 @@ package ning.zhou.bean;
 
 import ning.zhou.utils.EmptyUtils;
 
-import java.util.Arrays;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
+ * mysql查询条件封装
+ *
  * @author 周宁
  * @date 2018/4/13 16:08
  */
 public class Criteria {
-
+    /**
+     * 条件入参
+     */
     private Set<WhereParam> whereParams;
+    /**
+     * 分组入参
+     */
+    private Set<String> groupByFeilds;
+    /**
+     * 排序入参
+     */
+    private Set<Sort> sorts;
 
     public Set<WhereParam> getWhereParams() {
         return whereParams;
@@ -23,8 +32,26 @@ public class Criteria {
         this.whereParams = whereParams;
     }
 
+    public Set<String> getGroupByFeilds() {
+        return groupByFeilds;
+    }
+
+    public void setGroupByFeilds(Set<String> groupByFeilds) {
+        this.groupByFeilds = groupByFeilds;
+    }
+
+    public Set<Sort> getSorts() {
+        return sorts;
+    }
+
+    public void setSorts(Set<Sort> sorts) {
+        this.sorts = sorts;
+    }
+
     public Criteria() {
         whereParams = new LinkedHashSet<>();
+        groupByFeilds = new HashSet<>();
+        sorts = new LinkedHashSet<>();
     }
 
     public Criteria where(String key, Object value) {
@@ -91,9 +118,25 @@ public class Criteria {
         return this.where(key, "IN", args);
     }
 
-    public static void main(String[] args) {
-        Criteria criteria = new Criteria();
-        criteria.where("username", "zhouning01").and("epid", 921).or("isAdim", true).in("id", Arrays.asList(new Integer[]{1, 3, 4, 5}));
-        System.out.println(criteria.whereParams);
+    public Criteria groupBy(String... fields) {
+        groupByFeilds.addAll(Arrays.asList(fields));
+        return this;
     }
+
+    public Criteria descOrderBy(String... fields) {
+        for (String field : fields) {
+            sorts.add(new Sort(field));
+        }
+        return this;
+    }
+
+    public Criteria ascOrderBy(String... fields) {
+        for (String field : fields) {
+            sorts.add(new Sort(field, "ASC"));
+        }
+        return this;
+    }
+
+
+
 }

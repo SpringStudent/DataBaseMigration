@@ -23,7 +23,7 @@ public class V1_0_1__MigrationSystemLog extends BaseDataSourceCopyMigration {
         CommonJdbcTemplate source = new CommonJdbcTemplate(AdminOperationLog.class,sourceJdbcTemplate);
         CommonJdbcTemplate target = new CommonJdbcTemplate(SystemLog.class,targetJdbcTemplate);
 
-        /*List<AdminOperationLog> adminOperationLogs = source.query();
+        List<AdminOperationLog> adminOperationLogs = source.query();
         List<SystemLog> systemLogs = CollectionHelper.map(adminOperationLogs, new ObjectMapper<SystemLog, AdminOperationLog>() {
             @Override
             public SystemLog map(AdminOperationLog target) {
@@ -38,12 +38,14 @@ public class V1_0_1__MigrationSystemLog extends BaseDataSourceCopyMigration {
                 return systemLog;
             }
         });
-        target.batchSave(systemLogs);*/
+        target.batchSave(systemLogs);
 
-        Criteria criteria = new Criteria().where("operator","13701966214").and("enterpriseId", "in",Arrays.asList(89,921)).gt("id",235)
+        /*Criteria criteria = new Criteria().where("operator","13701966214").and("enterpriseId", "in",Arrays.asList(89,921)).gt("id",235)
                 .like("operObject","y").notEqual("id",256).or("id","in",Arrays.asList(new Integer[]{1,18})).and("id","in",1)
-                .gt("id",22000).isNull("operationTime");
+                .gt("id",22000).isNull("operationTime");*/
         /*Criteria criteria = new Criteria().or("id",123);*/
+        Criteria criteria = new Criteria().where("operator","13701966214").and("enterpriseId", "in",Arrays.asList(89,921)).groupBy("operator","operFunction")
+                .ascOrderBy("operationTime").descOrderBy("operator");
 
         List<SystemLog> result = target.queryWithCriteria(criteria);
         PageResult<SystemLog> result2 =target.pageQuery(new Page(1,12));

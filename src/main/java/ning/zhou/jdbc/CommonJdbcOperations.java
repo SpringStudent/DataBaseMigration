@@ -23,8 +23,8 @@ public interface CommonJdbcOperations {
     char IN_START = '(';
     char IN_END = ')';
     String SQL_IS = "IS";
-
-
+    String SQL_GROUP_BY = "GROUP BY";
+    String SQL_ORDER_BY = "ORDER BY";
     /**
      * 根据主键查询一条记录
      *
