@@ -123,14 +123,14 @@ public class Criteria {
         return this;
     }
 
-    public Criteria descOrderBy(String... fields) {
+    public Criteria orderByDesc(String... fields) {
         for (String field : fields) {
             sorts.add(new Sort(field));
         }
         return this;
     }
 
-    public Criteria ascOrderBy(String... fields) {
+    public Criteria orderByAsc(String... fields) {
         for (String field : fields) {
             sorts.add(new Sort(field, "ASC"));
         }

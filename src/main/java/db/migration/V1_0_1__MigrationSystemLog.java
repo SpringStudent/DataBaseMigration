@@ -10,7 +10,6 @@ import ning.zhou.jdbc.CommonJdbcTemplate;
 import ning.zhou.utils.CollectionHelper;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -47,12 +46,12 @@ public class V1_0_1__MigrationSystemLog extends BaseDataSourceCopyMigration {
                 .like("operObject","y").notEqual("id",256).or("id","in",Arrays.asList(new Integer[]{1,18})).and("id","in",1)
                 .gt("id",22000).isNull("operationTime");*/
         /*Criteria criteria = new Criteria().or("id",123);*/
-        Criteria criteria = new Criteria().where("operator", "13701966214").and("enterpriseId", "in", Arrays.asList(89, 921)).groupBy("operator", "operFunction").ascOrderBy("operationTime").descOrderBy("operator");
+        Criteria criteria = new Criteria().orderByDesc("operator");
 
         List<SystemLog> result = target.queryWithCriteria(criteria);
         PageResult<SystemLog> result2 = target.pageQuery(new Page(1, 12));
         PageResult<SystemLog> result4 = target.pageQueryWithCriteria(new Page(1, 12), criteria);
-        SystemLog systemLog = target.queryOne(1);
+        SystemLog systemLog = target.queryOne(2);
 
         System.out.print(systemLog);
         System.out.println(result);
