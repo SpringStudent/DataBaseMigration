@@ -3,7 +3,6 @@ package ning.zhou.jdbc;
 import ning.zhou.bean.Criteria;
 import ning.zhou.bean.Page;
 import ning.zhou.bean.PageResult;
-import ning.zhou.bean.Sort;
 
 import java.io.Serializable;
 import java.util.List;
@@ -25,6 +24,8 @@ public interface CommonJdbcOperations {
     String SQL_IS = "IS";
     String SQL_GROUP_BY = "GROUP BY";
     String SQL_ORDER_BY = "ORDER BY";
+    String EXECUTE_SQL = "⬢ Execute SQL sql :: {}";
+
     /**
      * 根据主键查询一条记录
      *
@@ -110,20 +111,16 @@ public interface CommonJdbcOperations {
      */
     <E> PageResult<E> pageQuery(Page page) throws Exception;
 
-    <E> PageResult<E> pageQueryWithCriteria(Page page, Criteria criteria) throws Exception;
-
     /**
-     * 分页并排序查询
+     * 分页条件查询
      *
      * @param page
-     * @param sort
+     * @param criteria
      * @param <E>
      * @return
      * @throws Exception
      */
-    <E> PageResult<E> pageAndSortQuery(Page page, Sort sort) throws Exception;
-
-    <E> PageResult<E> pageAndSortQueryWithCriteria(Page page, Sort sort, Criteria criteria) throws Exception;
+    <E> PageResult<E> pageQueryWithCriteria(Page page, Criteria criteria) throws Exception;
 
     /**
      * 条件查询

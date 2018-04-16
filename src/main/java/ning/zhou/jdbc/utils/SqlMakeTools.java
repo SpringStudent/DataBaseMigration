@@ -1,7 +1,5 @@
 package ning.zhou.jdbc.utils;
 
-import ning.zhou.bean.Criteria;
-
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.sql.Types;
@@ -61,7 +59,6 @@ public class SqlMakeTools {
             }
             sql.append(" DELETE FROM " + tbName + " WHERE " + primaryKey + " = ?");
         }
-        System.out.println("SQL=" + sql);
         return sql.toString();
     }
 

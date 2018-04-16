@@ -5,6 +5,8 @@ import ning.zhou.jdbc.utils.EntityTools;
 import ning.zhou.jdbc.utils.SqlMakeTools;
 import ning.zhou.utils.EmptyUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -18,6 +20,7 @@ import java.util.*;
  * @date 2018/4/13 10:17
  */
 public class CommonJdbcTemplate implements CommonJdbcOperations {
+    private static final Logger logger = LoggerFactory.getLogger(CommonJdbcTemplate.class);
 
     private Class clzz;
 
@@ -40,6 +43,7 @@ public class CommonJdbcTemplate implements CommonJdbcOperations {
     @Override
     public <E, Id extends Serializable> E queryOne(Id id) throws Exception {
         String sql = "SELECT * FROM " + tbName + " WHERE " + pk + " = ?";
+        logger.info(EXECUTE_SQL, sql);
         List<E> result = jdbcTemplate.query(sql, rowMapper, id);
         if (EmptyUtils.isEmpty(result)) {
             return null;
@@ -53,6 +57,7 @@ public class CommonJdbcTemplate implements CommonJdbcOperations {
     @Override
     public <E> List<E> query() throws Exception {
         String sql = "SELECT * FROM " + tbName;
+        logger.info(EXECUTE_SQL, sql);
         return jdbcTemplate.query(sql, rowMapper);
     }
 
@@ -61,7 +66,8 @@ public class CommonJdbcTemplate implements CommonJdbcOperations {
         String sql = SqlMakeTools.makeSql(clzz, tbName, SQL_INSERT);
         Object[] args = SqlMakeTools.setArgs(e, SQL_INSERT);
         int[] argTypes = SqlMakeTools.setArgTypes(e, SQL_INSERT);
-        jdbcTemplate.update(sql.toString(), args, argTypes);
+        logger.info(EXECUTE_SQL, sql);
+        jdbcTemplate.update(sql, args, argTypes);
     }
 
     @Override
@@ -83,12 +89,14 @@ public class CommonJdbcTemplate implements CommonJdbcOperations {
                 j = 0;
             }
         }
+        logger.info(EXECUTE_SQL, sql);
         jdbcTemplate.batchUpdate(sql, batchArgs, argTypes);
     }
 
     @Override
     public <E, Id extends Serializable> void delete(Id id) throws Exception {
         String sql = " DELETE FROM " + tbName + " WHERE " + pk + " = ?";
+        logger.info(EXECUTE_SQL, sql, id);
         jdbcTemplate.update(sql, id);
     }
 
@@ -104,6 +112,7 @@ public class CommonJdbcTemplate implements CommonJdbcOperations {
                     sql.append("?,");
                 }
             }
+            logger.info(EXECUTE_SQL, sql);
             jdbcTemplate.update(sql.toString(), ids.toArray());
         }
     }
@@ -113,6 +122,7 @@ public class CommonJdbcTemplate implements CommonJdbcOperations {
         String sql = SqlMakeTools.makeSql(clzz, tbName, SQL_UPDATE);
         Object[] args = SqlMakeTools.setArgs(e, SQL_UPDATE);
         int[] argTypes = SqlMakeTools.setArgTypes(e, SQL_UPDATE);
+        logger.info(EXECUTE_SQL, sql);
         jdbcTemplate.update(sql, args, argTypes);
     }
 
@@ -132,6 +142,7 @@ public class CommonJdbcTemplate implements CommonJdbcOperations {
                 j = 0;
             }
         }
+        logger.info(EXECUTE_SQL, sql);
         jdbcTemplate.batchUpdate(sql, batchArgs, argTypes);
     }
 
@@ -152,29 +163,7 @@ public class CommonJdbcTemplate implements CommonJdbcOperations {
         List<E> paged = jdbcTemplate.query(pageSql, params, rowMapper);
         String countSql = "SELECT FOUND_ROWS() ";
         int count = jdbcTemplate.queryForObject(countSql, Integer.class);
-        return PageResult.newPageResult(count, paged);
-    }
-
-    @Override
-    public <E> PageResult<E> pageAndSortQuery(Page page, Sort sort) throws Exception {
-        return this.pageAndSortQueryWithCriteria(page, sort, null);
-    }
-
-    @Override
-    public <E> PageResult<E> pageAndSortQueryWithCriteria(Page page, Sort sort, Criteria criteria) throws Exception {
-        String sql = "SELECT * FROM " + tbName;
-        Pair<String, Object[]> pair = doCriteria(criteria, new StringBuilder(sql));
-        sql = pair.getFirst();
-        Object[] params = pair.getSecond();
-        if (sort != null) {
-            sql += sort.buildSortSql();
-        }
-        String pageSql = "SELECT SQL_CALC_FOUND_ROWS * FROM (" + sql + ") temp LIMIT ?,?";
-        params = ArrayUtils.add(params, page.getOffset());
-        params = ArrayUtils.add(params, page.getPageSize());
-        List<E> paged = jdbcTemplate.query(pageSql, params, rowMapper);
-        String countSql = "SELECT FOUND_ROWS() ";
-        int count = jdbcTemplate.queryForObject(countSql, Integer.class);
+        logger.info(EXECUTE_SQL, sql);
         return PageResult.newPageResult(count, paged);
     }
 
@@ -182,6 +171,7 @@ public class CommonJdbcTemplate implements CommonJdbcOperations {
     public <E> List<E> queryWithCriteria(Criteria criteria) throws Exception {
         String sql = "SELECT * FROM " + tbName;
         Pair<String, Object[]> pair = doCriteria(criteria, new StringBuilder(sql));
+        logger.info(EXECUTE_SQL, pair.getFirst());
         return jdbcTemplate.query(pair.getFirst(), pair.getSecond(), rowMapper);
     }
 

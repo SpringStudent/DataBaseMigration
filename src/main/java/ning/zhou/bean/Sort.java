@@ -31,18 +31,15 @@ public class Sort {
         this.sortType = sortType;
     }
 
-    public String buildSortSql(){
-        return " order by "+this.getSortField()+" "+sortType;
-    }
-    public Sort(){
+    public Sort() {
 
     }
 
-    public Sort(String sortField){
+    public Sort(String sortField) {
         this.sortField = sortField;
     }
 
-    public Sort(String sortField,String sortType){
+    public Sort(String sortField, String sortType) {
         this.sortField = sortField;
     }
 }

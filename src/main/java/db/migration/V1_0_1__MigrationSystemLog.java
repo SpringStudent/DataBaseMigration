@@ -1,6 +1,9 @@
 package db.migration;
 
-import ning.zhou.bean.*;
+import ning.zhou.bean.Criteria;
+import ning.zhou.bean.ObjectMapper;
+import ning.zhou.bean.Page;
+import ning.zhou.bean.PageResult;
 import ning.zhou.domain.source.AdminOperationLog;
 import ning.zhou.domain.tgt.SystemLog;
 import ning.zhou.jdbc.CommonJdbcTemplate;
@@ -20,8 +23,8 @@ public class V1_0_1__MigrationSystemLog extends BaseDataSourceCopyMigration {
 
     @Override
     protected void doMigrate(JdbcTemplate sourceJdbcTemplate, JdbcTemplate targetJdbcTemplate) throws Exception {
-        CommonJdbcTemplate source = new CommonJdbcTemplate(AdminOperationLog.class,sourceJdbcTemplate);
-        CommonJdbcTemplate target = new CommonJdbcTemplate(SystemLog.class,targetJdbcTemplate);
+        CommonJdbcTemplate source = new CommonJdbcTemplate(AdminOperationLog.class, sourceJdbcTemplate);
+        CommonJdbcTemplate target = new CommonJdbcTemplate(SystemLog.class, targetJdbcTemplate);
 
         List<AdminOperationLog> adminOperationLogs = source.query();
         List<SystemLog> systemLogs = CollectionHelper.map(adminOperationLogs, new ObjectMapper<SystemLog, AdminOperationLog>() {
@@ -44,22 +47,17 @@ public class V1_0_1__MigrationSystemLog extends BaseDataSourceCopyMigration {
                 .like("operObject","y").notEqual("id",256).or("id","in",Arrays.asList(new Integer[]{1,18})).and("id","in",1)
                 .gt("id",22000).isNull("operationTime");*/
         /*Criteria criteria = new Criteria().or("id",123);*/
-        Criteria criteria = new Criteria().where("operator","13701966214").and("enterpriseId", "in",Arrays.asList(89,921)).groupBy("operator","operFunction")
-                .ascOrderBy("operationTime").descOrderBy("operator");
+        Criteria criteria = new Criteria().where("operator", "13701966214").and("enterpriseId", "in", Arrays.asList(89, 921)).groupBy("operator", "operFunction").ascOrderBy("operationTime").descOrderBy("operator");
 
         List<SystemLog> result = target.queryWithCriteria(criteria);
-        PageResult<SystemLog> result2 =target.pageQuery(new Page(1,12));
-        PageResult<SystemLog> result3 = target.pageAndSortQuery(new Page(1,11),new Sort("operationTime","desc"));
-        PageResult<SystemLog> result4 = target.pageQueryWithCriteria(new Page(1,12),criteria);
-        PageResult<SystemLog> result5 = target.pageAndSortQueryWithCriteria(new Page(1,12),new Sort("operationTime","desc"),criteria);
+        PageResult<SystemLog> result2 = target.pageQuery(new Page(1, 12));
+        PageResult<SystemLog> result4 = target.pageQueryWithCriteria(new Page(1, 12), criteria);
         SystemLog systemLog = target.queryOne(1);
 
         System.out.print(systemLog);
         System.out.println(result);
         System.out.println(result2);
-        System.out.println(result3);
         System.out.println(result4);
-        System.out.println(result5);
 
     }
 

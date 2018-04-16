@@ -33,17 +33,19 @@ public class EntityTools {
 
     /**
      * 判断是否为主键
+     *
      * @return
      */
-    public static boolean isPk(Class<?> entity,Field field){
+    public static boolean isPk(Class<?> entity, Field field) {
         String pk = getPk(entity);
         String columnName = field.getName();
         //该字段是主键
-        if(pk.equals(columnName)){
+        if (pk.equals(columnName)) {
             return true;
         }
         return false;
     }
+
     /**
      * 根据实体类名，获取表名称
      *
